@@ -18,8 +18,14 @@
                 <category
                     android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity android:name=".DashboardActivity" />
+        <activity android:name=".ViagemActivity" />
+        <activity android:name=".GastoActivity" />
+        <activity android:name=".ViagemListActivity" />
+        <activity android:name=".GastoListActivity" />
+
     </application>
 
 </manifest>

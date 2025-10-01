@@ -52,7 +52,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="120dp"
             android:clickable="true"
-            android:drawableTop="@drawable/Minhas_Viagens"
+            android:drawableTop="@drawable/minhas_viagens"
             android:onClick="selecionarOpcao"
             android:text="@string/minhas_viagens"
             android:textColor="#FFFFFF"
