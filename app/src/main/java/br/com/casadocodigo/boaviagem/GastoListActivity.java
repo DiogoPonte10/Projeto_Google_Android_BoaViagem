@@ -2,14 +2,19 @@ package br.com.casadocodigo.boaviagem;
 
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -21,6 +26,7 @@ import java.util.Map;
 public class GastoListActivity extends ListActivity implements AdapterView.OnItemClickListener {
 
     private List<Map<String, Object>> gastos;
+    private String dataAnterior = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,6 +46,8 @@ public class GastoListActivity extends ListActivity implements AdapterView.OnIte
 //                android.R.layout.simple_list_item_1, listarGastos()));
 //        ListView listView = getListView();
 //        listView.setOnItemClickListener(this);
+
+        registerForContextMenu(getListView());
     }
 
     @Override
@@ -82,29 +90,56 @@ public class GastoListActivity extends ListActivity implements AdapterView.OnIte
 //        return Arrays.asList("Sanduíche R$ 19,90", "Táxi Aeroporto - Hotal R$ 34,00", "Revista R$ 12,00");
 //    }
 
-    private class GastoViewBinder implements SimpleAdapter.ViewBinder {
 
-        private String dataAnterior = "";
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.gasto_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.remover) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            gastos.remove(info.position);
+            getListView().invalidateViews();
+            dataAnterior = "";
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    private class GastoViewBinder implements SimpleAdapter.ViewBinder {
 
         @Override
         public boolean setViewValue(View view, Object data, String textRepresentation) {
-            if (view.getId() == R.id.data) {
-                if (!dataAnterior.equals(data)) {
-                    TextView textView = (TextView) view;
-                    textView.setText(textRepresentation);
-                    dataAnterior = textRepresentation;
-                    view.setVisibility(View.VISIBLE);
-                } else {
-                    view.setVisibility(View.GONE);
-                }
-                return true;
-            }
-            if (view.getId() == R.id.categoria) {
-                Integer id = (Integer) data;
-                view.setBackgroundColor(getResources().getColor(id));
+            if (view.getId() == R.id.barraProgresso) {
+                Double valores[] = (Double[]) data;
+                ProgressBar progressBar = (ProgressBar) view;
+                progressBar.setMax(valores[0].intValue());
+                progressBar.setSecondaryProgress(valores[1].intValue());
+                progressBar.setProgress(valores[2].intValue());
                 return true;
             }
             return false;
+
+//            if (view.getId() == R.id.data) {
+//                if (!dataAnterior.equals(data)) {
+//                    TextView textView = (TextView) view;
+//                    textView.setText(textRepresentation);
+//                    dataAnterior = textRepresentation;
+//                    view.setVisibility(View.VISIBLE);
+//                } else {
+//                    view.setVisibility(View.GONE);
+//                }
+//                return true;
+//            }
+//            if (view.getId() == R.id.categoria) {
+//                Integer id = (Integer) data;
+//                view.setBackgroundColor(getResources().getColor(id));
+//                return true;
+//            }
+//            return false;
         }
     }
 }

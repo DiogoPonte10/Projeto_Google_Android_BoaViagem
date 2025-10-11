@@ -26,6 +26,20 @@
     <string name="categoria">Categoria</string>
     <string name="sair">Sair</string>
     <string name="remover_viagem">Remover Viagem</string>
+    <string name="remover">Remover</string>
+    <string name="editar">Editar</string>
+    <string name="gastos_realizados">Gastos Realizados</string>
+    <string name="opcoes">Opções</string>
+    <string name="confirmacao_exclusao_viagem">Deseja excluir a viagem selecionada?</string>
+    <string name="sim">Sim</string>
+    <string name="nao">Não</string>
+    <string name="informe_valor_limite">Informe o valor limite</string>
+    <string name="modo_viagem">Modo de Viagem</string>
+    <string name="modo_viagem_sumario">Escolha o modo de viagem</string>
+    <string name="valor_limite">Valor Limite</string>
+    <string name="preferencias">Preferencias</string>
+    <string name="valor_limite_sumario">Informe o valor limite</string>
+    <string name="manter_conectado"> Quer manter conectado?</string>
     <string-array name="categoria_gasto">
         <item>Alimentação</item>
         <item>Combustível</item>
