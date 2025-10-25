@@ -40,6 +40,8 @@
     <string name="preferencias">Preferencias</string>
     <string name="valor_limite_sumario">Informe o valor limite</string>
     <string name="manter_conectado"> Quer manter conectado?</string>
+    <string name="registro_salvo">Registro salvo com sucesso</string>
+    <string name="erro_salvar">Erro ao salvar registro"</string>
     <string-array name="categoria_gasto">
         <item>Alimentação</item>
         <item>Combustível</item>

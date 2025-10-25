@@ -1,21 +1,56 @@
 package br.com.casadocodigo.boaviagem;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class ViagemActivity extends Activity {
+
+    private Date dataChegada, dataSaida;
+    private int ano, mes, dia;
+    private Button dataChegadaButton, dataSaidaButton;
+    private DatabaseHelper helper;
+    private EditText destino, quantidadePessoas, orcamento;
+    private RadioGroup radioGroup;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nova_viagem);
+
+        Calendar calendar = Calendar.getInstance();
+        ano = calendar.get(Calendar.YEAR);
+        mes = calendar.get(Calendar.MONTH);
+        dia = calendar.get(Calendar.DAY_OF_MONTH);
+
+        dataChegadaButton = (Button) findViewById(R.id.dataChegada);
+        dataSaidaButton = (Button) findViewById(R.id.dataSaida);
+
+        destino = (EditText) findViewById(R.id.destino);
+        quantidadePessoas = (EditText) findViewById(R.id.quantidadePessoas);
+        orcamento = (EditText) findViewById(R.id.orcamento);
+        radioGroup = (RadioGroup) findViewById(R.id.tipoViagem);
+
+        helper = new DatabaseHelper(this);
     }
 
     @Override
@@ -36,5 +71,76 @@ public class ViagemActivity extends Activity {
         } else {
             return super.onMenuItemSelected(featureId, item);
         }
+    }
+
+    public void selecionarData(View view) {
+        showDialog(view.getId());
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        if (R.id.dataChegada == id) {
+            return new DatePickerDialog(this, dataChegadaListener, ano, mes, dia);
+        } else if (R.id.dataSaida == id){
+            return new DatePickerDialog(this, dataSaidaListener, ano, mes, dia);
+        }
+        return null;
+    }
+
+    private DatePickerDialog.OnDateSetListener dataChegadaListener = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+            dataChegada = criarData(year, month, dayOfMonth);
+            dataChegadaButton.setText(dia + "/" + (mes + 1) + "/" + ano);
+        }
+    };
+
+    private DatePickerDialog.OnDateSetListener dataSaidaListener = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+            dataSaida = criarData(year, month, dayOfMonth);
+            dataSaidaButton.setText(dia + "/" + (mes + 1) + "/" + ano);
+        }
+    };
+
+    private Date criarData(int year, int month, int dayOfMonth) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, month, dayOfMonth);
+        return calendar.getTime();
+    }
+
+    public void salvarViagem(View view) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("destino", destino.getText().toString());
+        values.put("data_chegada", dataChegada.getTime());
+        values.put("data_saida", dataSaida.getTime());
+        values.put("orcamento", orcamento.getText().toString());
+        values.put("quantidade_pessoas", quantidadePessoas.getText().toString());
+
+        int tipo = radioGroup.getCheckedRadioButtonId();
+
+        if (tipo == R.id.lazer) {
+            values.put("tipo_viagem", Constantes.VIAGEM_LAZER);
+        } else if (tipo == R.id.negocios) {
+            values.put("tipo_viagem", Constantes.VIAGEM_NEGOCIOS);
+        }
+
+        long resultado = db.insert("viagem", null, values);
+
+        if(resultado != 1) {
+            Toast.makeText(this, getString(R.string.registro_salvo),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, getString(R.string.erro_salvar),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        helper.close();
+        super.onDestroy();
     }
 }
