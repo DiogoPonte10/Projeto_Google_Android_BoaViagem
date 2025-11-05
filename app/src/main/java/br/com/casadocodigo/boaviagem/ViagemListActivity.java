@@ -200,7 +200,7 @@ public class ViagemListActivity extends ListActivity implements DialogInterface.
                     break;
         }
     }
-    
+
     private void removerViagem(String id) {
         SQLiteDatabase db = helper.getWritableDatabase();
         String where [] = new String[]{ id };
