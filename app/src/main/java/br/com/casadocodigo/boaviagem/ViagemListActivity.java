@@ -171,9 +171,15 @@ public class ViagemListActivity extends ListActivity implements DialogInterface.
 
     @Override
     public void onClick(DialogInterface dialog, int item) {
+        Intent intent;
+        String id = (String) viagens.get(viagemSelecionada).get("id");
+
         switch (item) {
             case 0:
-                startActivity(new Intent(this, ViagemActivity.class));
+                intent = new Intent(this, ViagemActivity.class);
+                intent.putExtra(Constantes.VIAGEM_ID, id);
+                startActivity(intent);
+//                startActivity(new Intent(this, ViagemActivity.class));
                 break;
             case 1:
                 startActivity(new Intent(this, GastoActivity.class));
@@ -185,13 +191,21 @@ public class ViagemListActivity extends ListActivity implements DialogInterface.
                 dialogConfirmacao.show();
                 break;
                 case DialogInterface.BUTTON_POSITIVE:
-                    viagens.remove(this.viagemSelecionada);
+                    viagens.remove(viagemSelecionada);
+                    removerViagem(id);
                     getListView().invalidateViews();
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
                     dialogConfirmacao.dismiss();
                     break;
         }
+    }
+    
+    private void removerViagem(String id) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        String where [] = new String[]{ id };
+        db.delete("gasto", "viagem_id = ?", where);
+        db.delete("viagem", "_id = ?", where);
     }
 
     private AlertDialog criaAlertDialog() {
