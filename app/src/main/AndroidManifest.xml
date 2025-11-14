@@ -8,6 +8,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar" >
+
         <activity
             android:name="br.com.casadocodigo.boaviagem.BoaViagemActivity"
             android:exported="true"
@@ -18,7 +19,6 @@
                 <category
                     android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity android:name=".DashboardActivity" />
         <activity android:name=".ViagemActivity" />
@@ -26,6 +26,13 @@
         <activity android:name=".ViagemListActivity" />
         <activity android:name=".GastoListActivity" />
 
+        <provider
+            android:authorities="br.com.casadocodigo.boaviagem.provider"
+            android:name=".provider.BoaViagemProvider">
+            <path-permission
+                android:path="viagem"
+                android:permission="br.com.casadocodigo.boaviagem.provider.permission.ALL"/>
+        </provider>
     </application>
 
 </manifest>
