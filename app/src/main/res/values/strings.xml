@@ -42,6 +42,7 @@
     <string name="manter_conectado"> Quer manter conectado?</string>
     <string name="registro_salvo">Registro salvo com sucesso</string>
     <string name="erro_salvar">Erro ao salvar registro"</string>
+    <string name="conta_inexistente">Conta Inexistente</string>
     <string-array name="categoria_gasto">
         <item>Alimentação</item>
         <item>Combustível</item>
