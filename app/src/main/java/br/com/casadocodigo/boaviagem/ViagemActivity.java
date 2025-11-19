@@ -1,12 +1,18 @@
 package br.com.casadocodigo.boaviagem;
 
+import static br.com.casadocodigo.boaviagem.Constantes.NOME_CONTA;
+import static br.com.casadocodigo.boaviagem.Constantes.PREFERENCIAS;
+import static br.com.casadocodigo.boaviagem.Constantes.TOKEN_ACESSO;
+
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +31,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import br.com.casadocodigo.boaviagem.calendar.CalendarService;
+import br.com.casadocodigo.boaviagem.dao.BoaViagemDAO;
+import br.com.casadocodigo.boaviagem.domain.Viagem;
+
 public class ViagemActivity extends Activity {
 
     private Date dataChegada, dataSaida;
@@ -33,7 +43,9 @@ public class ViagemActivity extends Activity {
     private DatabaseHelper helper;
     private EditText destino, quantidadePessoas, orcamento;
     private RadioGroup radioGroup;
-    private String id;
+    private Long id;
+    private CalendarService calendarService;
+    private BoaViagemDAO dao;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,11 +67,15 @@ public class ViagemActivity extends Activity {
 
         helper = new DatabaseHelper(this);
 
-        id = getIntent().getStringExtra(Constantes.VIAGEM_ID);
+        dao = new BoaViagemDAO(this);
 
-        if (id != null){
+        id = getIntent().getLongExtra(Constantes.VIAGEM_ID, -1);
+
+        if (id != -1){
             prepararEdicao();
         }
+
+        calendarService = criarCalendarService();
     }
 
     @Override
@@ -119,29 +135,46 @@ public class ViagemActivity extends Activity {
     }
 
     public void salvarViagem(View view) {
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put("destino", destino.getText().toString());
-        values.put("data_chegada", dataChegada.getTime());
-        values.put("data_saida", dataSaida.getTime());
-        values.put("orcamento", orcamento.getText().toString());
-        values.put("quantidade_pessoas", quantidadePessoas.getText().toString());
+        Viagem viagem = new Viagem();
+        viagem.setDestino(destino.getText().toString());
+        viagem.setDataChegada(dataChegada);
+        viagem.setDataSaida(dataSaida);
+        viagem.setOrcamento(
+                Double.valueOf(orcamento.getText().toString()));
+        viagem.setQuantidadePessoas(
+                Integer.valueOf(quantidadePessoas.getText().toString()));
 
         int tipo = radioGroup.getCheckedRadioButtonId();
 
-        if (tipo == R.id.lazer) {
-            values.put("tipo_viagem", Constantes.VIAGEM_LAZER);
-        } else if (tipo == R.id.negocios) {
-            values.put("tipo_viagem", Constantes.VIAGEM_NEGOCIOS);
+        if(tipo == R.id.lazer){
+            viagem.setTipoViagem(Constantes.VIAGEM_LAZER);
+        }else{
+            viagem.setTipoViagem(Constantes.VIAGEM_NEGOCIOS);
         }
 
+//        SQLiteDatabase db = helper.getWritableDatabase();
+//
+//        ContentValues values = new ContentValues();
+//        values.put("destino", destino.getText().toString());
+//        values.put("data_chegada", dataChegada.getTime());
+//        values.put("data_saida", dataSaida.getTime());
+//        values.put("orcamento", orcamento.getText().toString());
+//        values.put("quantidade_pessoas", quantidadePessoas.getText().toString());
+//
+//        int tipo = radioGroup.getCheckedRadioButtonId();
+//        if (tipo == R.id.lazer) {
+//            values.put("tipo_viagem", Constantes.VIAGEM_LAZER);
+//        } else if (tipo == R.id.negocios) {
+//            values.put("tipo_viagem", Constantes.VIAGEM_NEGOCIOS);
+//        }
+
         long resultado;
-        if (id == null) {
-            resultado = db.insert("viagem", null, values);
+
+        if (id == -1) {
+            resultado = dao.inserir(viagem);
+            new Task().execute(viagem);
         } else {
-            resultado = db.update("viagem", values, "_id = ?",
-                    new String[] { id });
+            resultado = dao.atualizar(viagem);
         }
 
         if(resultado != 1) {
@@ -154,36 +187,52 @@ public class ViagemActivity extends Activity {
     }
 
     private void prepararEdicao() {
-        SQLiteDatabase db = helper.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT tipo_viagem, destino, data_chegada," +
-                "data_saida, quantidade_pessoas, orcamento FROM viagem WHERE _id = ?",
-                new String[] { id });
-
-        cursor.moveToFirst();
+        Viagem viagem = dao.buscarViagemPorId(id);
+//        SQLiteDatabase db = helper.getReadableDatabase();
+//
+//        Cursor cursor = db.rawQuery("SELECT tipo_viagem, destino, data_chegada," +
+//                "data_saida, quantidade_pessoas, orcamento FROM viagem WHERE _id = ?",
+//                new String[] { id });
+//
+//        cursor.moveToFirst();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-        if (cursor.getInt(0) == Constantes.VIAGEM_LAZER){
+        if (viagem.getTipoViagem() == Constantes.VIAGEM_LAZER){
             radioGroup.check(R.id.lazer);
         } else {
             radioGroup.check(R.id.negocios);
         }
 
-        destino.setText(cursor.getString(1));
-        dataChegada = new Date(cursor.getLong(2));
-        dataSaida = new Date(cursor.getLong(3));
+        destino.setText(viagem.getDstino());
+        dataChegada = viagem.getDataChegada();
+        dataSaida = viagem.getDataSaida();
         dataChegadaButton.setText(dateFormat.format(dataChegada));
         dataSaidaButton.setText(dateFormat.format(dataSaida));
-        quantidadePessoas.setText(cursor.getString(4));
-        orcamento.setText(cursor.getString(5));
-
-        cursor.close();
+        quantidadePessoas.setText(viagem.getQuantidadePessoas().toString());
+        orcamento.setText(viagem.getOrcamenteo().toString());
     }
 
     @Override
     protected void onDestroy() {
-        helper.close();
+        dao.close();
         super.onDestroy();
+    }
+
+    private CalendarService criarCalendarService() {
+        SharedPreferences preferencias = getSharedPreferences(PREFERENCIAS, MODE_PRIVATE);
+        String nomeConta = preferencias.getString(NOME_CONTA, null);
+        String tokenAcesso = preferencias.getString(TOKEN_ACESSO, null);
+
+        return new CalendarService(nomeConta, tokenAcesso);
+    }
+
+    private class Task extends AsyncTask<Viagem, Void, Void> {
+        @Override
+        protected Void doInBackground(Viagem... viagens) {
+            Viagem viagem = viagens[0];
+            calendarService.criarEvento(viagem);
+            return null;
+        }
     }
 }

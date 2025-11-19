@@ -97,7 +97,7 @@ public class BoaViagemActivity extends Activity {
         String tokenAcesso = preferencias.getString(TOKEN_ACESSO, null);
         String nomeConta = preferencias.getString(NOME_CONTA, null);
 
-        if (tokenAcesso != null && nomeConta != null) {
+        if (tokenAcesso != null) {
             accountManager.invalidateAuthToken(tokenAcesso);
             conta = accountManager.getAccountByName(nomeConta);
         }
