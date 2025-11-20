@@ -15,4 +15,6 @@ public class Constantes {
     public static final String MODO_VIAGEM = "modo_viagem";
     public static final String VIAGEM_DESTINO = "viagem_destino";
     public static final String MODO_SELECIONAR_VIAGEM = "modo_selecionar_viagem";
+
+    public static final String VIAGEM_SELECIONADA = "Viagem_selecionada";
 }

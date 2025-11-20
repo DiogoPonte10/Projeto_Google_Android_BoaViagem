@@ -229,5 +229,4 @@ public class ViagemListActivity extends ListActivity implements DialogInterface.
 
         return builder.create();
     }
-
 }
